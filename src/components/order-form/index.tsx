@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, FileText, Trash2 } from "lucide-react";
 import { CustomerSection } from "./customer-section";
 import { ProductSearch } from "./product-search";
 import { DetailItem, type DetailValues } from "./detail-item";
@@ -17,6 +17,7 @@ import {
   type DetailForCalc,
 } from "@/lib/calc/order-total";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/calc/payment-fee";
+import { useDraftOrder } from "@/hooks/use-draft-order";
 import type { Database } from "@/lib/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -75,6 +76,13 @@ export function OrderForm({
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 
+  // 下書き管理
+  const { hasDraft, draftSavedAt, checked, loadDraft, saveDraft, clearDraft } =
+    useDraftOrder();
+
+  // initialized: 下書き判定後にフォーム入力＆自動保存を開始するフラグ
+  const [initialized, setInitialized] = useState(false);
+
   // 注文者情報
   const [customer, setCustomer] = useState({
     customer_code: "",
@@ -103,6 +111,47 @@ export function OrderForm({
     const deadline = new Date(settings.earlyPriceDeadline);
     return new Date() <= deadline;
   }, [settings.earlyPriceDeadline]);
+
+  // checkedかつ下書きなし → 自動でinitialize
+  useEffect(() => {
+    if (checked && !hasDraft) {
+      setInitialized(true);
+    }
+  }, [checked, hasDraft]);
+
+  // 下書き復元
+  const restoreDraft = useCallback(() => {
+    const draft = loadDraft();
+    if (!draft) return;
+
+    setCustomer(draft.customer);
+    setPaymentMethod(draft.paymentMethod as PaymentMethod);
+    setDiscount(draft.discount);
+    setOrderMemo(draft.orderMemo);
+    setDetails(draft.details);
+    setInitialized(true);
+
+    toast.success("下書きを復元しました");
+  }, [loadDraft]);
+
+  // 下書き破棄
+  const discardDraft = useCallback(() => {
+    clearDraft();
+    setInitialized(true);
+    toast.info("下書きを破棄しました");
+  }, [clearDraft]);
+
+  // 自動保存: state変更のたびに保存（initialized後のみ）
+  useEffect(() => {
+    if (!initialized) return;
+    saveDraft({
+      customer,
+      paymentMethod,
+      discount,
+      orderMemo,
+      details,
+    });
+  }, [customer, paymentMethod, discount, orderMemo, details, initialized, saveDraft]);
 
   // 注文者フィールド変更
   const handleCustomerChange = useCallback(
@@ -319,9 +368,7 @@ export function OrderForm({
 
   // 保存
   const handleSave = async () => {
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
     setSaving(true);
     try {
@@ -389,6 +436,9 @@ export function OrderForm({
         throw new Error(err.error || "保存に失敗しました");
       }
 
+      // 保存成功 → 下書きを削除
+      clearDraft();
+
       const data = await res.json();
       toast.success(`受注 ${data.order_number} を登録しました`);
       router.push(`/orders/${data.id}`);
@@ -401,11 +451,68 @@ export function OrderForm({
     }
   };
 
+  const formatSavedAt = (iso: string) => {
+    return new Date(iso).toLocaleString("ja-JP", {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // localStorageチェック完了まで待機
+  if (!checked) {
+    return (
+      <div className="text-center py-12 text-gray-400 text-sm">読み込み中...</div>
+    );
+  }
+
+  // 下書きあり＆まだ選択していない → バナーのみ表示
+  if (hasDraft && !initialized) {
+    return (
+      <div className="flex items-center justify-between gap-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+        <div className="flex items-center gap-3">
+          <FileText className="h-5 w-5 text-amber-600 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-amber-800">
+              入力途中の下書きがあります
+            </p>
+            {draftSavedAt && (
+              <p className="text-xs text-amber-600">
+                保存日時: {formatSavedAt(draftSavedAt)}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={discardDraft}
+            className="text-xs gap-1.5"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            破棄して新規作成
+          </Button>
+          <Button
+            size="sm"
+            onClick={restoreDraft}
+            className="text-xs gap-1.5 bg-amber-600 hover:bg-amber-700"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            復元する
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // フォーム本体
   return (
     <div className="flex gap-6">
       {/* 左: フォーム */}
       <div className="flex-1 space-y-6">
-        {/* ① 注文者情報 */}
+        {/* 注文者情報 */}
         <Card>
           <CardContent className="pt-6">
             <CustomerSection
@@ -416,7 +523,7 @@ export function OrderForm({
           </CardContent>
         </Card>
 
-        {/* ② 商品明細 */}
+        {/* 商品追加 */}
         <Card>
           <CardContent className="pt-6 space-y-4">
             <h2 className="text-lg font-semibold border-b pb-2">商品明細</h2>
@@ -453,7 +560,7 @@ export function OrderForm({
           ))}
         </div>
 
-        {/* ③ 支払方法・値引き（商品確定後に入力） */}
+        {/* 支払方法・値引き */}
         <Card>
           <CardContent className="pt-6 space-y-4">
             <h2 className="text-lg font-semibold border-b pb-2">
