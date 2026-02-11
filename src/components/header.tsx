@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
 import { LogOut, User, Settings, Menu, X } from "lucide-react";
-import { KikiteLogo } from "@/components/kikite-logo";
 
 interface HeaderProps {
   userName: string;
@@ -35,7 +34,6 @@ export function Header({ userName, userEmail, sidebarOpen, onSidebarToggle }: He
     <header className="sticky top-0 z-50 border-b bg-white">
       <div className="px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* サイドバートグル */}
           <button
             onClick={onSidebarToggle}
             className="p-2 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors lg:hidden"
@@ -48,8 +46,8 @@ export function Header({ userName, userEmail, sidebarOpen, onSidebarToggle }: He
             )}
           </button>
 
-          <Link href="/">
-            <KikiteLogo size="sm" />
+          <Link href="/" className="font-semibold text-lg tracking-tight text-gray-800">
+            kikite
           </Link>
         </div>
 

@@ -17,7 +17,6 @@ export function AppShell({ userName, userEmail, children }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mounted, setMounted] = useState(false);
 
-  // ローカルストレージから状態を復元
   useEffect(() => {
     const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY);
     if (saved !== null) {
@@ -38,7 +37,7 @@ export function AppShell({ userName, userEmail, children }: AppShellProps) {
       <div className="min-h-screen bg-gray-50">
         <header className="sticky top-0 z-50 border-b bg-white">
           <div className="px-4 h-14 flex items-center">
-            <span className="font-bold text-lg text-gray-900">受注管理</span>
+            <span className="font-semibold text-lg tracking-tight text-gray-800">kikite</span>
           </div>
         </header>
         <div className="flex">

@@ -225,6 +225,18 @@ export function OrderForm({
     saveDraft({ customer, paymentMethod, discount, orderMemo, details });
   }, [customer, paymentMethod, discount, orderMemo, details, initialized, saveDraft, mode]);
 
+	// ブラウザ離脱防止（入力中データがある場合）
+  useEffect(() => {
+    const hasData = details.length > 0 || customer.customer_name !== "";
+    if (!hasData || !initialized) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+	}, [details.length, customer.customer_name, initialized]);
+
   // 注文者フィールド変更
   const handleCustomerChange = useCallback(
     (field: string, value: string) => {
