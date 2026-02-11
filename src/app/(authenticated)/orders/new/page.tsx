@@ -21,7 +21,7 @@ export default async function NewOrderPage() {
   // アプリ設定を取得
   const { data: settingsData } = await supabase
     .from("app_settings")
-    .select("key, value");
+    .select("key, value").returns<{key: string; value: string}[]>();
 
   const settingsMap = new Map(
     (settingsData || []).map((s) => [s.key, s.value])

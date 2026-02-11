@@ -38,6 +38,7 @@ interface OrderFilterBarProps {
   operators: string[];
   totalCount: number;
   filteredCount: number;
+  currentOperatorName?: string;
 }
 
 export function OrderFilterBar({
@@ -46,6 +47,7 @@ export function OrderFilterBar({
   operators,
   totalCount,
   filteredCount,
+  currentOperatorName,
 }: OrderFilterBarProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -88,6 +90,9 @@ export function OrderFilterBar({
 
   const paymentMethods = ["代金引換", "クレジットカード", "銀行振込", "後払い"];
 
+  // 担当者ドロップダウンの表示値
+  const operatorDisplayValue = filters.operatorName || "all";
+
   return (
     <div className="space-y-3">
       {/* 上段: クイックフィルター + 検索 */}
@@ -129,6 +134,23 @@ export function OrderFilterBar({
           )}
         </div>
 
+        {/* 自分が担当ボタン */}
+        {currentOperatorName && (
+          <Button
+            variant={filters.operatorName === currentOperatorName ? "default" : "outline"}
+            size="sm"
+            onClick={() =>
+              updateFilter(
+                "operatorName",
+                filters.operatorName === currentOperatorName ? "" : currentOperatorName
+              )
+            }
+            className="gap-1.5 text-xs"
+          >
+            自分が担当
+          </Button>
+        )}
+
         {/* 詳細フィルタートグル */}
         <Button
           variant="outline"
@@ -164,7 +186,7 @@ export function OrderFilterBar({
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500">担当者</label>
             <Select
-              value={filters.operatorName || "all"}
+              value={operatorDisplayValue}
               onValueChange={(v) => updateFilter("operatorName", v === "all" ? "" : v)}
             >
               <SelectTrigger className="w-40 h-9 text-sm">
@@ -172,11 +194,18 @@ export function OrderFilterBar({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">すべて</SelectItem>
-                {operators.map((op) => (
-                  <SelectItem key={op} value={op}>
-                    {op}
+                {currentOperatorName && (
+                  <SelectItem value={currentOperatorName}>
+                    ★ 自分（{currentOperatorName}）
                   </SelectItem>
-                ))}
+                )}
+                {operators
+                  .filter((op) => op !== currentOperatorName)
+                  .map((op) => (
+                    <SelectItem key={op} value={op}>
+                      {op}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

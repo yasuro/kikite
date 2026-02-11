@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const orderDetailSchema = z.object({
+  line_number: z.number().int().min(1),
   product_code: z.string().min(1, "商品を選択してください"),
   product_name: z.string().min(1),
   unit_price: z.number().int().min(0),

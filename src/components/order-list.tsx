@@ -28,6 +28,7 @@ export function OrderList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<OrderFilters>(INITIAL_FILTERS);
+  const [currentOperatorName, setCurrentOperatorName] = useState<string>("");
 
   const supabase = createClient();
 
@@ -52,6 +53,18 @@ export function OrderList() {
 
   useEffect(() => {
     fetchOrders();
+
+    // 現在のログインユーザー名を取得
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const name =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          user.email?.split("@")[0] ||
+          "";
+        setCurrentOperatorName(name);
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -108,6 +121,7 @@ export function OrderList() {
         operators={operators}
         totalCount={orders.length}
         filteredCount={filteredOrders.length}
+        currentOperatorName={currentOperatorName}
       />
 
       {/* サマリーカード */}
