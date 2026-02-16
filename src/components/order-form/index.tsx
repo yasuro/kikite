@@ -6,8 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Save, Loader2, FileText, Trash2 } from "lucide-react";
+import { Save, Loader2, FileText, Trash2, Home, Calendar, Clock } from "lucide-react";
 import { CustomerSection } from "./customer-section";
 import { ProductSearch } from "./product-search";
 import { DetailItem, type DetailValues } from "./detail-item";
@@ -21,6 +29,15 @@ import { useDraftOrder } from "@/hooks/use-draft-order";
 import type { Database } from "@/lib/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
+
+const DELIVERY_TIMES = [
+  "",
+  "午前中",
+  "14時〜16時",
+  "16時〜18時",
+  "18時〜20時",
+  "19時〜21時",
+];
 
 interface AppSettings {
   defaultShippingFee: number;
@@ -124,6 +141,9 @@ export function OrderForm({
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
+  const [bulkDeliveryDialogOpen, setBulkDeliveryDialogOpen] = useState(false);
+  const [bulkDeliveryDate, setBulkDeliveryDate] = useState("");
+  const [bulkDeliveryTime, setBulkDeliveryTime] = useState("");
 
   // 下書き管理（新規モードのみ）
   const { hasDraft, draftSavedAt, checked, loadDraft, saveDraft, clearDraft } =
@@ -312,6 +332,35 @@ export function OrderForm({
     },
     [customer]
   );
+
+  // すべての明細に注文者情報をコピー
+  const handleCopyDeliveryToAll = useCallback(() => {
+    setBulkDeliveryDialogOpen(true);
+  }, []);
+
+  // 一括配送設定を適用
+  const handleApplyBulkDelivery = useCallback(() => {
+    setDetails((prev) => {
+      return prev.map((detail) => ({
+        ...detail,
+        delivery_name: customer.customer_name,
+        delivery_name_kana: customer.customer_name_kana,
+        delivery_phone: customer.customer_phone,
+        delivery_postal_code: customer.postal_code,
+        delivery_prefecture: customer.prefecture,
+        delivery_address1: customer.customer_address1,
+        delivery_address2: customer.customer_address2,
+        delivery_company: customer.customer_company,
+        delivery_department: customer.customer_department,
+        delivery_date: bulkDeliveryDate,
+        delivery_time: bulkDeliveryTime,
+      }));
+    });
+    setBulkDeliveryDialogOpen(false);
+    setBulkDeliveryDate("");
+    setBulkDeliveryTime("");
+    toast.success("すべての明細に配送情報を設定しました");
+  }, [customer, bulkDeliveryDate, bulkDeliveryTime]);
 
   // 金額計算
   const calcResult = useMemo(() => {
@@ -617,7 +666,22 @@ export function OrderForm({
         {/* 商品追加 */}
         <Card>
           <CardContent className="pt-6 space-y-4">
-            <h2 className="text-lg font-semibold border-b pb-2">商品明細</h2>
+            <div className="flex items-center justify-between border-b pb-2">
+              <h2 className="text-lg font-semibold">商品明細</h2>
+              {details.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyDeliveryToAll}
+                  className="text-sm"
+                  disabled={!customer.customer_name || !customer.postal_code || !customer.prefecture || !customer.customer_address1}
+                >
+                  <Home className="h-4 w-4 mr-1.5" />
+                  すべて自宅へ配送
+                </Button>
+              )}
+            </div>
             {isEarlyPrice && (
               <div className="p-2 text-sm text-amber-700 bg-amber-50 rounded-md">
                 🏷️ 早割期間中です。早割価格が自動適用されます。
@@ -749,6 +813,68 @@ customerCode={customer.customer_code}
           detailCount={details.length}
         />
       </div>
+
+      {/* 一括配送設定ダイアログ */}
+      <Dialog open={bulkDeliveryDialogOpen} onOpenChange={setBulkDeliveryDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Home className="h-5 w-5" />
+              すべて自宅へ配送
+            </DialogTitle>
+            <DialogDescription>
+              すべての商品を注文者の住所へ配送します。
+              お届け日と配達時間帯を設定できます。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                お届け日（任意）
+              </Label>
+              <Input
+                type="date"
+                value={bulkDeliveryDate}
+                onChange={(e) => setBulkDeliveryDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                配達時間帯（任意）
+              </Label>
+              <select
+                value={bulkDeliveryTime}
+                onChange={(e) => setBulkDeliveryTime(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+              >
+                {DELIVERY_TIMES.map((time) => (
+                  <option key={time} value={time}>
+                    {time || "指定なし"}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBulkDeliveryDialogOpen(false);
+                setBulkDeliveryDate("");
+                setBulkDeliveryTime("");
+              }}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={handleApplyBulkDelivery}>
+              設定する
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -240,8 +240,14 @@ export function CustomerSection({
             <Input
               value={values.postal_code}
               onChange={(e) =>
-                handlePostalCodeChange(e.target.value.replace(/\D/g, ""))
+                handlePostalCodeChange(e.target.value.replace(/\D/g, "").slice(0, 7))
               }
+              onPaste={(e) => {
+                e.preventDefault();
+                const pastedText = e.clipboardData.getData('text');
+                const cleanedText = pastedText.replace(/\D/g, '').slice(0, 7);
+                handlePostalCodeChange(cleanedText);
+              }}
               placeholder="1000001"
               maxLength={7}
               className={errors.postal_code ? "border-red-500" : ""}

@@ -35,6 +35,8 @@ export interface Database {
           discount: number;
           total_amount: number;
           order_memo: string | null;
+          is_csv_exported: boolean;
+          csv_exported_at: string | null;
           created_at: string;
           updated_at: string;
           created_by: string;
@@ -64,6 +66,8 @@ export interface Database {
           discount?: number;
           total_amount: number;
           order_memo?: string | null;
+          is_csv_exported?: boolean;
+          csv_exported_at?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by: string;
@@ -93,6 +97,8 @@ export interface Database {
           discount?: number;
           total_amount?: number;
           order_memo?: string | null;
+          is_csv_exported?: boolean;
+          csv_exported_at?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by?: string;
