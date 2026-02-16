@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 全受注の明細を一括取得
-  const orderIds = orders.map((o) => o.id);
+  const orderIds = orders.map((o: any) => o.id);
   const { data: allDetails, error: detailsError } = await supabase
     .from("order_details")
     .select("*")

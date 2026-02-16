@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/supabase/database.types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 

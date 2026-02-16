@@ -54,7 +54,7 @@ export default function OrderEditPage() {
           .from("app_settings")
           .select("key, value");
         if (settingsData) {
-          const map = new Map(settingsData.map((s) => [s.key, s.value]));
+          const map = new Map(settingsData.map((s: any) => [s.key, s.value]));
           setSettings({
             defaultShippingFee: parseInt(
               map.get("default_shipping_fee") || "880"

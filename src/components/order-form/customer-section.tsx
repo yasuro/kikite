@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { fetchAddressFromPostalCode } from "@/lib/postal-code";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/supabase/database.types";
 
 type Customer = Database["public"]["Tables"]["customers"]["Row"];
 

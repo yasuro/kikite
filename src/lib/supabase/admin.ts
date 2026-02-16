@@ -1,5 +1,5 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "./types";
+import type { Database } from "./database.types";
 
 // サーバーサイド専用 — RLSをバイパスする管理者クライアント
 // CSV出力、受注番号採番など、サーバーサイドAPI Routeでのみ使用する

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Trash2, UserSearch, History, Loader2 } from "lucide-react";
 import { fetchAddressFromPostalCode } from "@/lib/postal-code";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/supabase/database.types";
 
 type Customer = Database["public"]["Tables"]["customers"]["Row"];
 

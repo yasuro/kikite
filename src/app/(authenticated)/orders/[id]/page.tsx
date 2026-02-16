@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { ArrowLeft, Trash2, Loader2, Pencil } from "lucide-react";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/supabase/database.types";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type OrderDetail = Database["public"]["Tables"]["order_details"]["Row"];

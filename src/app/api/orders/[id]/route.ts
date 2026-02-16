@@ -7,6 +7,7 @@ import {
   type DetailForCalc,
 } from "@/lib/calc/order-total";
 import type { PaymentMethod } from "@/lib/calc/payment-fee";
+import type { Database } from "@/lib/supabase/database.types";
 
 export async function GET(
   request: NextRequest,
@@ -54,13 +55,13 @@ export async function PUT(
   }
 
   // 2. 既存受注の存在確認
-  const { data: existingOrder } = await supabase
+  const { data: existingOrder, error: fetchError } = await supabase
     .from("orders")
-    .select("id, order_number, status")
+    .select("id, order_number, is_csv_exported")
     .eq("id", id)
     .single();
 
-  if (!existingOrder) {
+  if (fetchError || !existingOrder) {
     return NextResponse.json(
       { error: "受注が見つかりません" },
       { status: 404 }
@@ -68,7 +69,7 @@ export async function PUT(
   }
 
   // CSV出力済みの場合は編集不可
-  if (existingOrder.status === "CSV出力済み") {
+  if (existingOrder.is_csv_exported === true) {
     return NextResponse.json(
       { error: "CSV出力済みの受注は編集できません" },
       { status: 400 }
@@ -113,7 +114,7 @@ export async function PUT(
     );
   }
 
-  const productMap = new Map(products.map((p) => [p.code, p]));
+  const productMap = new Map(products.map((p: any) => [p.code, p]));
 
   // 5. アプリ設定を取得
   const { data: settingsData } = await supabase
@@ -121,7 +122,7 @@ export async function PUT(
     .select("key, value");
 
   const settingsMap = new Map(
-    (settingsData || []).map((s) => [s.key, s.value])
+    (settingsData || []).map((s: any) => [s.key, s.value])
   );
   const defaultShippingFee = parseInt(
     settingsMap.get("default_shipping_fee") || "880"
@@ -224,9 +225,7 @@ export async function PUT(
   }
 
   // 8. orders UPDATE
-  const { error: orderError } = await adminClient
-    .from("orders")
-    .update({
+  const updateData = {
       customer_code: data.customer_code || null,
       customer_name: data.customer_name,
       customer_name_kana: data.customer_name_kana || null,
@@ -246,7 +245,11 @@ export async function PUT(
       discount: data.discount,
       total_amount: calc.totalAmount,
       order_memo: data.order_memo || null,
-    })
+  };
+
+  const { error: orderError } = await adminClient
+    .from("orders")
+    .update(updateData)
     .eq("id", id);
 
   if (orderError) {
@@ -269,7 +272,7 @@ export async function PUT(
     );
   }
 
-  const detailInserts = enrichedDetails.map((d: any) => ({
+  const detailInserts = enrichedDetails.map((d) => ({
     order_id: id,
     ...d,
   }));

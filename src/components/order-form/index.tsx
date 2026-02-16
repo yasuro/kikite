@@ -26,7 +26,7 @@ import {
 } from "@/lib/calc/order-total";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/calc/payment-fee";
 import { useDraftOrder } from "@/hooks/use-draft-order";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/supabase/database.types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
