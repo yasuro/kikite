@@ -67,14 +67,12 @@ export function AppShellClient({ children }: AppShellClientProps) {
         userName={userName}
         userEmail={userEmail}
       />
-      <div className="flex">
-        <Sidebar isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
-        <main className={`flex-1 p-4 mt-16 md:p-6 transition-all duration-300 ${
-          isOpen ? 'md:ml-56' : 'md:ml-14'
-        }`}>
-          {children}
-        </main>
-      </div>
+      <Sidebar isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
+      <main className={`p-4 mt-16 md:p-6 transition-all duration-300 ${
+        isOpen ? 'ml-56' : 'ml-14'
+      }`}>
+        {children}
+      </main>
     </div>
   );
 }

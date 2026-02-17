@@ -40,9 +40,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       {/* サイドバー本体 */}
       <aside
         className={cn(
-          "fixed top-14 left-0 z-40 h-[calc(100vh-3.5rem)] bg-white border-r shadow-sm transition-all duration-300 ease-in-out",
-          "lg:relative lg:top-0 lg:z-0",
-          isOpen ? "w-56 translate-x-0" : "w-0 -translate-x-full lg:w-14 lg:translate-x-0"
+          "fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] bg-white border-r shadow-sm transition-all duration-300 ease-in-out",
+          isOpen ? "w-56 translate-x-0" : "w-14 -translate-x-full lg:translate-x-0"
         )}
       >
         <div className={cn(
