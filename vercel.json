@@ -1,12 +1,4 @@
 {
-  "functions": {
-    "src/app/**/*.tsx": {
-      "maxDuration": 10
-    },
-    "src/api/**/*.ts": {
-      "maxDuration": 10
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
