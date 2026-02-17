@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -25,6 +26,11 @@ const nextConfig: NextConfig = {
   compress: true,
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{member}}',
+    },
+  },
 };
 
 export default nextConfig;

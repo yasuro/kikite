@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar";
-import { createClient } from "@/lib/supabase/client";
+import { getLazySupabaseClient } from "@/lib/supabase/lazy-client";
 import { useRouter } from "next/navigation";
 
 interface AppShellClientProps {
@@ -16,7 +16,7 @@ export function AppShellClient({ children }: AppShellClientProps) {
   const [userEmail, setUserEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = getLazySupabaseClient();
 
   useEffect(() => {
     const checkAuth = async () => {
