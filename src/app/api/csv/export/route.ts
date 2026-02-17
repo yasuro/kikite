@@ -82,7 +82,7 @@ function escapeCsvField(value: string | number | null | undefined): string {
 }
 
 function boolToText(flag: boolean | null): string {
-  return flag ? "あり" : "なし";
+  return flag ? "TRUE" : "FALSE";
 }
 
 export async function POST(request: NextRequest) {
