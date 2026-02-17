@@ -3,9 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { OrderForm } from "@/components/order-form";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
+
+const OrderForm = dynamic(() => 
+  import("@/components/order-form").then(mod => mod.OrderForm),
+  { ssr: false }
+);
 
 interface AppSettings {
   defaultShippingFee: number;

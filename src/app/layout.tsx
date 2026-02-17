@@ -4,7 +4,11 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+});
 
 export const metadata: Metadata = {
   title: "kikite - 電話受注入力システム",

@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { OrderForm } from "@/components/order-form";
+import dynamic from "next/dynamic";
+
+const OrderForm = dynamic(() => 
+  import("@/components/order-form").then(mod => mod.OrderForm),
+  { ssr: true }
+);
 
 export default async function NewOrderPage() {
   const supabase = await createClient();
