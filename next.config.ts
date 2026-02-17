@@ -25,7 +25,6 @@ const nextConfig: NextConfig = {
   compress: true,
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
-  swcMinify: true,
 };
 
 export default nextConfig;
