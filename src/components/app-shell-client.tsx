@@ -11,7 +11,7 @@ interface AppShellClientProps {
 }
 
 export function AppShellClient({ children }: AppShellClientProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [userName, setUserName] = useState("ユーザー");
   const [userEmail, setUserEmail] = useState("");
   const [loading, setLoading] = useState(true);
@@ -69,7 +69,9 @@ export function AppShellClient({ children }: AppShellClientProps) {
       />
       <div className="flex">
         <Sidebar isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
-        <main className="flex-1 p-4 md:ml-64 mt-16 md:p-6">
+        <main className={`flex-1 p-4 mt-16 md:p-6 transition-all duration-300 ${
+          isOpen ? 'md:ml-56' : 'md:ml-14'
+        }`}>
           {children}
         </main>
       </div>
