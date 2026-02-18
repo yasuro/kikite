@@ -88,6 +88,12 @@ export async function searchPostalCodeViaProxy(
     }
 
     const data = await res.json();
+    
+    // 警告メッセージがある場合はコンソールに出力
+    if (data.warning) {
+      console.info('郵便番号検索:', data.warning);
+    }
+    
     return data.postalCode || null;
   } catch (error) {
     console.error('郵便番号検索エラー:', error);

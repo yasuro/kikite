@@ -3,6 +3,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+interface DetailSummary {
+  product_code: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  delivery_name: string;
+  delivery_address1?: string;
+}
+
 interface OrderSummaryProps {
   subtotal: number;
   totalShippingFee: number;
@@ -13,6 +22,7 @@ interface OrderSummaryProps {
   paymentMethod: string;
   paymentFeeError?: string;
   detailCount: number;
+  details?: DetailSummary[];
 }
 
 export function OrderSummary({
@@ -25,6 +35,7 @@ export function OrderSummary({
   paymentMethod,
   paymentFeeError,
   detailCount,
+  details = [],
 }: OrderSummaryProps) {
   return (
     <Card className="sticky top-20">
@@ -84,6 +95,55 @@ export function OrderSummary({
           </div>
         )}
       </CardContent>
+
+      {/* 商品明細サマリー */}
+      {details.length > 0 && (
+        <>
+          <Separator />
+          <CardHeader className="pb-3 pt-4">
+            <CardTitle className="text-base">明細サマリー</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {details.map((detail, index) => (
+                <div
+                  key={index}
+                  className="text-xs p-2 bg-gray-50 rounded border border-gray-100"
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <div className="flex-1">
+                      <span className="font-mono text-gray-600">
+                        {detail.product_code}
+                      </span>
+                      <span className="ml-2 font-medium">
+                        {detail.product_name}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-mono">
+                        {detail.quantity}個
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-gray-600">
+                      <span>配送先: {detail.delivery_name}</span>
+                      {detail.delivery_address1 && (
+                        <div className="text-[10px] text-gray-500 mt-0.5 truncate">
+                          {detail.delivery_address1}
+                        </div>
+                      )}
+                    </div>
+                    <div className="font-mono text-right">
+                      ¥{(detail.unit_price * detail.quantity).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </>
+      )}
     </Card>
   );
 }

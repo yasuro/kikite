@@ -17,11 +17,13 @@ export interface WrappingInput {
 export function calculateWrappingFee(input: WrappingInput): number {
   let fee = 0;
 
-  if (input.noshiType === "通常のし") {
+  // のしタイプがnullまたは"なし"の場合は料金なし
+  if (input.noshiType && input.noshiType !== "なし" && input.noshiType === "通常のし") {
     fee += NOSHI_FEE;
   }
 
-  if (input.wrappingType === "フル包装") {
+  // ラッピングタイプがnullまたは"なし"の場合は料金なし
+  if (input.wrappingType && input.wrappingType !== "なし" && input.wrappingType === "フル包装") {
     fee += FULL_WRAPPING_FEE;
   }
 

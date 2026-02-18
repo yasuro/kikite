@@ -821,6 +821,14 @@ customerCode={customer.customer_code}
           paymentMethod={paymentMethod}
           paymentFeeError={calcResult.paymentFeeError}
           detailCount={details.length}
+          details={details.map((d) => ({
+            product_code: d.product_code,
+            product_name: d.product_name,
+            quantity: d.quantity,
+            unit_price: d.unit_price,
+            delivery_name: d.delivery_name,
+            delivery_address1: d.delivery_address1,
+          }))}
         />
       </div>
 

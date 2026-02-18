@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { DatePickerModern } from "@/components/ui/date-picker-modern";
 import { Trash2, UserSearch, History, Loader2, Search } from "lucide-react";
 import { fetchAddressFromPostalCode } from "@/lib/postal-code";
 import { searchPostalCodeViaProxy } from "@/lib/postal-code-reverse";
@@ -80,6 +81,7 @@ const DELIVERY_TIMES = [
 const NOSHI_TYPES = ["なし", "シールのし", "通常のし"];
 const NOSHI_POSITIONS = ["内のし", "外のし"];
 const NOSHI_INSCRIPTIONS = ["御歳暮", "御年賀", "御供", "その他"];
+const NOSHI_INSCRIPTIONS_SIMPLE = ["なし", "お中元", "素のし"];
 const WRAPPING_TYPES = ["なし", "簡易包装", "フル包装"];
 
 export function DetailItem({
@@ -528,6 +530,7 @@ export function DetailItem({
                 onChange(index, "delivery_name", e.target.value)
               }
               placeholder="山田太郎"
+              required
               className={getError("delivery_name") ? "border-red-500" : ""}
             />
             {getError("delivery_name") && (
@@ -563,6 +566,7 @@ export function DetailItem({
                 }}
                 placeholder="1000001"
                 maxLength={7}
+                required
                 className={
                   getError("delivery_postal_code") ? "border-red-500" : ""
                 }
@@ -588,6 +592,7 @@ export function DetailItem({
               onChange={(e) =>
                 onChange(index, "delivery_prefecture", e.target.value)
               }
+              required
               className={
                 getError("delivery_prefecture") ? "border-red-500" : ""
               }
@@ -607,6 +612,7 @@ export function DetailItem({
               onChange={(e) =>
                 onChange(index, "delivery_address1", e.target.value)
               }
+              required
               className={
                 getError("delivery_address1") ? "border-red-500" : ""
               }
@@ -651,12 +657,12 @@ export function DetailItem({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
           <Label className="text-xs">お届け日</Label>
-          <Input
-            type="date"
-            value={values.delivery_date}
-            onChange={(e) =>
-              onChange(index, "delivery_date", e.target.value)
+          <DatePickerModern
+            value={values.delivery_date ? new Date(values.delivery_date) : undefined}
+            onChange={(date) =>
+              onChange(index, "delivery_date", date ? date.toISOString().split('T')[0] : "")
             }
+            placeholder="日付を選択"
           />
         </div>
         <div>
@@ -688,121 +694,181 @@ export function DetailItem({
         </div>
       </div>
 
-      {/* のし・ラッピング */}
-      <div className="space-y-3">
-        <Label className="text-sm font-semibold">のし・ラッピング</Label>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <Label className="text-xs">のし</Label>
-            <select
-              value={values.noshi_type}
-              onChange={(e) =>
-                onChange(index, "noshi_type", e.target.value)
-              }
-              disabled={!values.noshi_available}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm disabled:opacity-50"
-            >
-              {NOSHI_TYPES.filter(
-                (t) => !(isOsonaeSelected && t === "シールのし")
-              ).map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            {!values.noshi_available && (
-              <p className="text-xs text-gray-400 mt-1">のし対応不可</p>
-            )}
-          </div>
-          {values.noshi_type !== "なし" && (
-            <>
+      {/* ラッピング・のし */}
+      {(values.wrapping_available || values.noshi_available) && (
+        <div className="space-y-3">
+          <Label className="text-sm font-semibold">ラッピング・のし</Label>
+          
+          {/* ラッピング選択（wrapping_availableがtrueの場合のみ表示） */}
+          {values.wrapping_available && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">のし位置</Label>
+                <Label className="text-xs">ラッピング</Label>
                 <select
-                  value={values.noshi_position}
-                  onChange={(e) =>
-                    onChange(index, "noshi_position", e.target.value)
-                  }
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                >
-                  {NOSHI_POSITIONS.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label className="text-xs">表書き</Label>
-                <select
-                  value={values.noshi_inscription}
-                  onChange={(e) =>
-                    onChange(index, "noshi_inscription", e.target.value)
-                  }
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                >
-                  {NOSHI_INSCRIPTIONS.map((i) => (
-                    <option key={i} value={i}>
-                      {i}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {values.noshi_inscription === "その他" && (
-                <div className="md:col-span-3">
-                  <Label className="text-xs">表書き（自由入力）</Label>
-                  <Input
-                    value={values.noshi_inscription_custom}
-                    onChange={(e) =>
-                      onChange(
-                        index,
-                        "noshi_inscription_custom",
-                        e.target.value
-                      )
+                  value={values.wrapping_type}
+                  onChange={(e) => {
+                    const newWrappingType = e.target.value;
+                    onChange(index, "wrapping_type", newWrappingType);
+                    // ラッピングなしの場合、のしも自動的になしに設定
+                    if (newWrappingType === "なし" && values.noshi_type !== "なし") {
+                      onChange(index, "noshi_type", "なし");
                     }
-                  />
-                </div>
-              )}
-              <div className="md:col-span-3">
-                <Label className="text-xs">のし名入れ</Label>
-                <Input
-                  value={values.noshi_name}
-                  onChange={(e) =>
-                    onChange(index, "noshi_name", e.target.value)
-                  }
-                  placeholder="例: 山田"
-                />
+                  }}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                >
+                  {WRAPPING_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </>
+              <div>
+                <Label className="text-xs">ラッピング料</Label>
+                <div className="h-9 flex items-center font-mono text-sm">
+                  ¥{wrappingFee.toLocaleString()}
+                </div>
+              </div>
+            </div>
           )}
-          <div>
-            <Label className="text-xs">ラッピング</Label>
-            <select
-              value={values.wrapping_type}
-              onChange={(e) =>
-                onChange(index, "wrapping_type", e.target.value)
-              }
-              disabled={!values.wrapping_available}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm disabled:opacity-50"
-            >
-              {WRAPPING_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            {!values.wrapping_available && (
-              <p className="text-xs text-gray-400 mt-1">ラッピング対応不可</p>
+
+          {/* のし選択（noshi_availableがtrueかつラッピング選択時のみ表示） */}
+          {values.noshi_available && values.wrapping_type !== "なし" && (
+          <div className="pl-4 border-l-2 border-gray-200 space-y-3">
+            {/* フル包装の場合：シンプルなあり/なし選択 */}
+            {values.wrapping_type === "フル包装" ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">のし</Label>
+                    <select
+                      value={values.noshi_type === "なし" ? "なし" : "あり"}
+                      onChange={(e) => {
+                        const hasNoshi = e.target.value === "あり";
+                        onChange(index, "noshi_type", hasNoshi ? "通常のし" : "なし");
+                      }}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                    >
+                      <option value="なし">なし</option>
+                      <option value="あり">あり</option>
+                    </select>
+                  </div>
+                </div>
+                {values.noshi_type !== "なし" && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">表書き</Label>
+                        <select
+                          value={values.noshi_inscription}
+                          onChange={(e) =>
+                            onChange(index, "noshi_inscription", e.target.value)
+                          }
+                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                        >
+                          {NOSHI_INSCRIPTIONS.map((i) => (
+                            <option key={i} value={i}>
+                              {i}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {values.noshi_inscription === "その他" && (
+                        <div>
+                          <Label className="text-xs">表書き（自由入力）</Label>
+                          <Input
+                            value={values.noshi_inscription_custom}
+                            onChange={(e) =>
+                              onChange(
+                                index,
+                                "noshi_inscription_custom",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-xs">のし名入れ</Label>
+                      <Input
+                        value={values.noshi_name}
+                        onChange={(e) =>
+                          onChange(index, "noshi_name", e.target.value)
+                        }
+                        placeholder="例: 山田"
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* 簡易包装の場合：シンプルなあり/なし選択 */
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">のし</Label>
+                    <select
+                      value={values.noshi_type === "なし" ? "なし" : "あり"}
+                      onChange={(e) => {
+                        const hasNoshi = e.target.value === "あり";
+                        if (hasNoshi) {
+                          onChange(index, "noshi_type", "通常のし");
+                          // 簡易包装の場合、のし位置は外のし固定
+                          onChange(index, "noshi_position", "外のし");
+                        } else {
+                          onChange(index, "noshi_type", "なし");
+                        }
+                      }}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                    >
+                      <option value="なし">なし</option>
+                      <option value="あり">あり</option>
+                    </select>
+                  </div>
+                </div>
+                {values.noshi_type !== "なし" && (
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs">表書き</Label>
+                      <select
+                        value={
+                          NOSHI_INSCRIPTIONS_SIMPLE.includes(values.noshi_inscription)
+                            ? values.noshi_inscription
+                            : "なし"
+                        }
+                        onChange={(e) =>
+                          onChange(index, "noshi_inscription", e.target.value)
+                        }
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                      >
+                        {NOSHI_INSCRIPTIONS_SIMPLE.map((i) => (
+                          <option key={i} value={i}>
+                            {i}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {values.noshi_inscription !== "なし" && values.noshi_inscription !== "素のし" && (
+                      <div>
+                        <Label className="text-xs">のし名入れ</Label>
+                        <Input
+                          value={values.noshi_name}
+                          onChange={(e) =>
+                            onChange(index, "noshi_name", e.target.value)
+                          }
+                          placeholder="例: 山田"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
-          <div>
-            <Label className="text-xs">ラッピング料</Label>
-            <div className="h-9 flex items-center font-mono text-sm">
-              ¥{wrappingFee.toLocaleString()}
-            </div>
-          </div>
+        )}
         </div>
-      </div>
+      )}
 
       {/* メモ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
