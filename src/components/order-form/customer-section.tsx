@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { fetchAddressFromPostalCode } from "@/lib/postal-code";
+import { searchPostalCodeViaProxy } from "@/lib/postal-code-reverse";
+import { Button } from "@/components/ui/button";
+import { Search, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Customer = Database["public"]["Tables"]["customers"]["Row"];
@@ -36,6 +40,7 @@ export function CustomerSection({
   const [customerResults, setCustomerResults] = useState<Customer[]>([]);
   const [isCustomerOpen, setIsCustomerOpen] = useState(false);
   const [postalLoading, setPostalLoading] = useState(false);
+  const [reverseSearching, setReverseSearching] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const supabaseRef = useRef(createClient());
   const searchIdRef = useRef(0);
@@ -116,6 +121,32 @@ export function CustomerSection({
         onChange("customer_address1", address.fullAddress);
       }
       setPostalLoading(false);
+    }
+  };
+
+  const handleReversePostalCodeSearch = async () => {
+    if (!values.prefecture || !values.customer_address1) {
+      toast.error("都道府県と住所１を入力してください");
+      return;
+    }
+
+    setReverseSearching(true);
+    try {
+      const postalCode = await searchPostalCodeViaProxy(
+        values.prefecture,
+        values.customer_address1
+      );
+      
+      if (postalCode) {
+        onChange("postal_code", postalCode);
+        toast.success("郵便番号を取得しました");
+      } else {
+        toast.error("該当する郵便番号が見つかりませんでした");
+      }
+    } catch (error) {
+      toast.error("郵便番号の検索に失敗しました");
+    } finally {
+      setReverseSearching(false);
     }
   };
 
@@ -231,7 +262,30 @@ export function CustomerSection({
       </div>
 
       {/* 住所 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="space-y-4">
+        <div className="flex items-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleReversePostalCodeSearch}
+            disabled={reverseSearching || !values.prefecture || !values.customer_address1}
+            className="text-xs"
+          >
+            {reverseSearching ? (
+              <>
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                検索中
+              </>
+            ) : (
+              <>
+                <Search className="mr-1 h-3 w-3" />
+                住所から郵便番号を入力
+              </>
+            )}
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <Label>
             郵便番号 <span className="text-red-500">*</span>
@@ -287,6 +341,7 @@ export function CustomerSection({
             </p>
           )}
         </div>
+      </div>
       </div>
       <div>
         <Label>住所２（建物名・部屋番号）</Label>
