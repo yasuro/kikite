@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { DatePickerModern } from "@/components/ui/date-picker-modern";
+import { DatePickerSimple } from "@/components/ui/date-picker-simple";
 import { Trash2, UserSearch, History, Loader2, Search } from "lucide-react";
 import { fetchAddressFromPostalCode } from "@/lib/postal-code";
 import { searchPostalCodeViaProxy } from "@/lib/postal-code-reverse";
@@ -657,7 +657,7 @@ export function DetailItem({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
           <Label className="text-xs">お届け日</Label>
-          <DatePickerModern
+          <DatePickerSimple
             value={values.delivery_date ? new Date(values.delivery_date) : undefined}
             onChange={(date) =>
               onChange(index, "delivery_date", date ? date.toISOString().split('T')[0] : "")

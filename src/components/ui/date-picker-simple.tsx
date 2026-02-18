@@ -6,13 +6,8 @@ import { ja } from "date-fns/locale";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
-interface DatePickerModernProps {
+interface DatePickerSimpleProps {
   value?: Date;
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
@@ -21,18 +16,31 @@ interface DatePickerModernProps {
   required?: boolean;
 }
 
-export function DatePickerModern({
+export function DatePickerSimple({
   value,
   onChange,
   placeholder = "日付を選択",
   className,
   disabled = false,
   required = false,
-}: DatePickerModernProps) {
+}: DatePickerSimpleProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [currentMonth, setCurrentMonth] = React.useState(
     value || new Date()
   );
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // クリックアウトで閉じる
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
   const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
@@ -80,28 +88,28 @@ export function DatePickerModern({
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground",
-            required && !value && "border-red-300 bg-red-50/30",
-            value && "border-green-300 bg-green-50/30",
-            className
-          )}
-          disabled={disabled}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {value ? format(value, "yyyy年MM月dd日", { locale: ja }) : <span>{placeholder}</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <div className="p-3">
+    <div ref={containerRef} className="relative">
+      <Button
+        type="button"
+        variant="outline"
+        className={cn(
+          "w-full justify-start text-left font-normal",
+          !value && "text-muted-foreground",
+          className
+        )}
+        disabled={disabled}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <CalendarIcon className="mr-2 h-4 w-4" />
+        {value ? format(value, "yyyy年MM月dd日", { locale: ja }) : <span>{placeholder}</span>}
+      </Button>
+      
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-auto rounded-md border bg-white p-3 shadow-lg">
           {/* ヘッダー */}
           <div className="flex items-center justify-between mb-2">
             <button
+              type="button"
               onClick={() => handleMonthChange(-1)}
               className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
             >
@@ -111,6 +119,7 @@ export function DatePickerModern({
               {format(currentMonth, "yyyy年 M月", { locale: ja })}
             </div>
             <button
+              type="button"
               onClick={() => handleMonthChange(1)}
               className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
             >
@@ -141,6 +150,7 @@ export function DatePickerModern({
               return (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => handleSelect(date)}
                   disabled={!isCurrentMonth(date)}
                   className={cn(
@@ -166,6 +176,7 @@ export function DatePickerModern({
           {/* フッター */}
           <div className="flex gap-2 mt-3 pt-3 border-t">
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={() => handleSelect(new Date())}
@@ -174,6 +185,7 @@ export function DatePickerModern({
               今日
             </Button>
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -186,7 +198,7 @@ export function DatePickerModern({
             </Button>
           </div>
         </div>
-      </PopoverContent>
-    </Popover>
+      )}
+    </div>
   );
 }
