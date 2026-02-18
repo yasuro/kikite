@@ -337,6 +337,42 @@ export type Database = {
         }
         Relationships: []
       }
+      postal_codes: {
+        Row: {
+          id: number
+          postal_code: string
+          prefecture: string
+          city: string
+          town: string | null
+          prefecture_kana: string | null
+          city_kana: string | null
+          town_kana: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          postal_code: string
+          prefecture: string
+          city: string
+          town?: string | null
+          prefecture_kana?: string | null
+          city_kana?: string | null
+          town_kana?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          postal_code?: string
+          prefecture?: string
+          city?: string
+          town?: string | null
+          prefecture_kana?: string | null
+          city_kana?: string | null
+          town_kana?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           code: string
