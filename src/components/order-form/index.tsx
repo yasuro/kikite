@@ -245,10 +245,13 @@ export function OrderForm({
     saveDraft({ customer, paymentMethod, discount, orderMemo, details });
   }, [customer, paymentMethod, discount, orderMemo, details, initialized, saveDraft, mode]);
 
-	// ブラウザ離脱防止（入力中データがある場合）
+  // 保存成功フラグ
+  const [isSaved, setIsSaved] = useState(false);
+
+	// ブラウザ離脱防止（入力中データがある場合かつ未保存の場合）
   useEffect(() => {
     const hasData = details.length > 0 || customer.customer_name !== "";
-    if (!hasData || !initialized) return;
+    if (!hasData || !initialized || isSaved) return;
 
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -256,7 +259,7 @@ export function OrderForm({
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-	}, [details.length, customer.customer_name, initialized]);
+	}, [details.length, customer.customer_name, initialized, isSaved]);
 
   // 注文者フィールド変更
   const handleCustomerChange = useCallback(
@@ -581,7 +584,14 @@ export function OrderForm({
           ? `受注 ${data.order_number} を更新しました`
           : `受注 ${data.order_number} を登録しました`;
       toast.success(msg);
-      router.push(`/orders/${data.id}`);
+      
+      // 保存成功フラグを立てて離脱防止を無効化
+      setIsSaved(true);
+      
+      // 少し待ってから画面遷移（フラグ反映のため）
+      setTimeout(() => {
+        router.push(`/orders/${data.id}`);
+      }, 100);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "保存に失敗しました";
