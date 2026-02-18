@@ -85,6 +85,13 @@ function boolToText(flag: boolean | null): string {
   return flag ? "TRUE" : "FALSE";
 }
 
+function formatWrappingType(type: string | null): string {
+  if (!type || type === "なし") return "";
+  if (type === "簡易包装") return "無料";
+  if (type === "フル包装") return "有料";
+  return type;
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const adminClient = createAdminClient();
@@ -233,7 +240,7 @@ export async function POST(request: NextRequest) {
         detail.noshi_inscription,
         detail.noshi_name,
         boolToText(detail.wrapping_flag),
-        detail.wrapping_type,
+        formatWrappingType(detail.wrapping_type),
         detail.wrapping_fee,
         detail.message_card,
         detail.line_memo,
