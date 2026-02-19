@@ -93,4 +93,20 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  font-family: var(--font-biz-ud-gothic), "BIZ UDPGothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+}
+
+/* 英数字にMontserratを適用 */
+.font-mono,
+input[type="number"],
+input[type="tel"],
+input[type="email"],
+.font-montserrat {
+  font-family: var(--font-montserrat), "Montserrat", monospace !important;
+}
+
+/* 金額や数値表示用のクラス */
+.numeric {
+  font-family: var(--font-montserrat), "Montserrat", monospace;
+  font-variant-numeric: tabular-nums;
 }

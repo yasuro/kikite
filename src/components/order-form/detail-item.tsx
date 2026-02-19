@@ -280,7 +280,7 @@ export function DetailItem({
     >
       {/* ヘッダー */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <span className="text-sm font-semibold text-gray-500">
             明細 #{index + 1}
           </span>
@@ -288,6 +288,24 @@ export function DetailItem({
             {values.product_code}
           </span>
           <span className="text-sm font-medium">{values.product_name}</span>
+          {/* 商品特性ラベル */}
+          <div className="flex items-center gap-1.5">
+            {values.is_free_shipping && (
+              <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700 font-medium">
+                送料無料
+              </span>
+            )}
+            {values.wrapping_available && (
+              <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">
+                ラッピング可
+              </span>
+            )}
+            {values.noshi_available && (
+              <span className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-medium">
+                のし可
+              </span>
+            )}
+          </div>
           {hasAnyError && (
             <span className="text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded">
               入力エラーあり
@@ -775,7 +793,9 @@ export function DetailItem({
                       </div>
                       {values.noshi_inscription === "その他" && (
                         <div>
-                          <Label className="text-xs">表書き（自由入力）</Label>
+                          <Label className="text-xs">
+                            表書き（自由入力） <span className="text-red-500">*</span>
+                          </Label>
                           <Input
                             value={values.noshi_inscription_custom}
                             onChange={(e) =>
@@ -785,7 +805,15 @@ export function DetailItem({
                                 e.target.value
                               )
                             }
+                            className={getError(`details.${index}.noshi_inscription_custom`) ? "border-red-500" : ""}
+                            placeholder="必須入力"
+                            required
                           />
+                          {getError(`details.${index}.noshi_inscription_custom`) && (
+                            <p className="text-xs text-red-500 mt-1">
+                              {getError(`details.${index}.noshi_inscription_custom`)}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>

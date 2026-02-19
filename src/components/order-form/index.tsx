@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Save, Loader2, FileText, Trash2, Home, Calendar, Clock } from "lucide-react";
+import { Save, Loader2, FileText, Trash2, Home, Calendar, Clock, User, Package, CreditCard, ShoppingCart } from "lucide-react";
 import { CustomerSection } from "./customer-section";
 import { ProductSearch } from "./product-search";
 import { DetailItem, type DetailValues } from "./detail-item";
@@ -465,6 +465,16 @@ export function OrderForm({
         newErrors[`detail_${i}_quantity`] = "1以上の数量を入力してください";
         errorMessages.push(`明細#${lineNum}: 数量が不正です`);
       }
+      // フル包装・のしあり・表書きその他の場合は自由入力を必須
+      if (
+        d.wrapping_type === "フル包装" &&
+        d.noshi_type !== "なし" &&
+        d.noshi_inscription === "その他" &&
+        !d.noshi_inscription_custom
+      ) {
+        newErrors[`details.${i}.noshi_inscription_custom`] = "表書きを入力してください";
+        errorMessages.push(`明細#${lineNum}: 表書き（自由入力）が未入力です`);
+      }
     });
 
     if (calcResult.paymentFeeError) {
@@ -677,7 +687,10 @@ export function OrderForm({
         <Card>
           <CardContent className="pt-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-2">
-              <h2 className="text-lg font-semibold">商品明細</h2>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                商品明細
+              </h2>
               {details.length > 0 && (
                 <Button
                   type="button"
@@ -729,7 +742,8 @@ customerCode={customer.customer_code}
         {/* 支払方法・値引き */}
         <Card>
           <CardContent className="pt-6 space-y-4">
-            <h2 className="text-lg font-semibold border-b pb-2">
+            <h2 className="text-lg font-semibold border-b pb-2 flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
               支払・値引き
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

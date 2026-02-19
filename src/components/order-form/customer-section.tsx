@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { fetchAddressFromPostalCode } from "@/lib/postal-code";
 import { searchPostalCodeViaProxy } from "@/lib/postal-code-reverse";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, User } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -152,7 +152,10 @@ export function CustomerSection({
 
   return (
     <div className="space-y-5">
-      <h2 className="text-lg font-semibold border-b pb-2">注文者情報</h2>
+      <h2 className="text-lg font-semibold border-b pb-2 flex items-center gap-2">
+        <User className="h-5 w-5" />
+        注文者情報
+      </h2>
 
       {/* 顧客検索 */}
       <div ref={containerRef} className="relative max-w-sm">
