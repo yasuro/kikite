@@ -15,6 +15,11 @@ export interface WrappingInput {
 }
 
 export function calculateWrappingFee(input: WrappingInput): number {
+  // 簡易包装の場合は無料（シールのしも無料対応）
+  if (input.wrappingType === "簡易包装") {
+    return 0;
+  }
+
   let fee = 0;
 
   // のしタイプがnullまたは"なし"の場合は料金なし

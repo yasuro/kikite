@@ -66,7 +66,9 @@ export function DatePickerSimple({
   }
 
   const handleSelect = (date: Date) => {
-    onChange?.(date);
+    // ローカル日付として正しく扱うため、時刻を正午に設定
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+    onChange?.(localDate);
     setIsOpen(false);
   };
 
@@ -179,7 +181,12 @@ export function DatePickerSimple({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => handleSelect(new Date())}
+              onClick={() => {
+                const today = new Date();
+                const localToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0, 0);
+                onChange?.(localToday);
+                setIsOpen(false);
+              }}
               className="flex-1"
             >
               今日
