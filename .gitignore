@@ -42,3 +42,18 @@ next-env.d.ts
 
 # IDE
 *.code-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+.history/
+
+# OS Files
+._*
+.Spotlight-V100
+.Trashes
+
+# Agent/AI tools
+.agent/
