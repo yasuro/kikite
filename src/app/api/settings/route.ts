@@ -30,7 +30,6 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   const supabase = await createClient();
-  const adminClient = createAdminClient();
 
   const {
     data: { user },
@@ -67,7 +66,7 @@ export async function PUT(request: NextRequest) {
   for (const [key, value] of Object.entries(settings)) {
     if (!allowedKeys.includes(key)) continue;
 
-    const { error } = await adminClient
+    const { error } = await supabase
       .from("app_settings")
       .update({ value: String(value) })
       .eq("key", key);
