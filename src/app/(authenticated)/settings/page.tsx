@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DatePickerSimple } from "@/components/ui/date-picker-simple";
 import { toast } from "sonner";
 import { Save, Loader2 } from "lucide-react";
 
@@ -12,7 +13,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [earlyPriceDeadline, setEarlyPriceDeadline] = useState("");
+  const [earlyPriceDeadline, setEarlyPriceDeadline] = useState<Date | undefined>(undefined);
   const [defaultShippingFee, setDefaultShippingFee] = useState(880);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(5000);
 
@@ -26,14 +27,9 @@ export default function SettingsPage() {
         const s = data.settings;
 
         if (s.early_price_deadline) {
-          // ISO文字列→datetime-local形式に変換
+          // ISO文字列→Date形式に変換
           const d = new Date(s.early_price_deadline);
-          const local = new Date(
-            d.getTime() - d.getTimezoneOffset() * 60000
-          )
-            .toISOString()
-            .slice(0, 16);
-          setEarlyPriceDeadline(local);
+          setEarlyPriceDeadline(d);
         }
         if (s.default_shipping_fee) {
           setDefaultShippingFee(parseInt(s.default_shipping_fee));
@@ -67,9 +63,8 @@ export default function SettingsPage() {
 
     setSaving(true);
     try {
-      // datetime-local → ISO文字列（JST）
-      const deadline = new Date(earlyPriceDeadline);
-      const isoDeadline = deadline.toISOString();
+      // Date → ISO文字列
+      const isoDeadline = earlyPriceDeadline.toISOString();
 
       const res = await fetch("/api/settings", {
         method: "PUT",
@@ -108,7 +103,7 @@ export default function SettingsPage() {
 
   // 早割が現在有効かどうか判定
   const isEarlyActive = earlyPriceDeadline
-    ? new Date(earlyPriceDeadline) > new Date()
+    ? earlyPriceDeadline > new Date()
     : false;
 
   return (
@@ -123,10 +118,10 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div>
             <Label>早割適用期限</Label>
-            <Input
-              type="datetime-local"
+            <DatePickerSimple
               value={earlyPriceDeadline}
-              onChange={(e) => setEarlyPriceDeadline(e.target.value)}
+              onChange={(date) => setEarlyPriceDeadline(date)}
+              placeholder="早割適用期限を選択"
             />
             <div className="mt-2">
               {isEarlyActive ? (
