@@ -197,7 +197,7 @@ export function DetailItem({
   const handleDeliveryHistorySelect = (item: DeliveryHistoryItem) => {
     onChange(index, "delivery_name", item.delivery_name);
     onChange(index, "delivery_phone", item.delivery_phone || "");
-    onChange(index, "delivery_postal_code", item.delivery_postal_code || "");
+    onChange(index, "delivery_postal_code", (item.delivery_postal_code || "").replace(/\D/g, ""));
     onChange(index, "delivery_prefecture", item.delivery_prefecture || "");
     onChange(index, "delivery_address1", item.delivery_address || "");
     onChange(index, "delivery_address2", "");

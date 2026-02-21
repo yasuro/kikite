@@ -186,7 +186,7 @@ export function OrderForm({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(() =>
     mode === "edit" && initialOrder
       ? (initialOrder.payment_method as PaymentMethod)
-      : "代金引換"
+      : "クレジットカード"
   );
   const [discount, setDiscount] = useState(() =>
     mode === "edit" && initialOrder ? initialOrder.discount : 0
